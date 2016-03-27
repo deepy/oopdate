@@ -68,4 +68,23 @@
     </plugin>
         </plugins>
     </build>
+    <developers>
+        <developer>
+            <name>Alex Nordlund</name>
+            <email>deep.alexander@gmail.com</email>
+            <organization>XD.cm</organization>
+            <organizationUrl>https://xd.cm</organizationUrl>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>BSD 3-Clause License</name>
+            <url>https://github.com/deepy/oopdate/blob/master/LICENSE.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:git@github.com:deepy/oopdate.git</connection>
+        <developerConnection>scm:git:git@github.com:deepy/oopdate.git</developerConnection>
+        <url>git@github.com:deepy/oopdate.git</url>
+    </scm>
 </project>
