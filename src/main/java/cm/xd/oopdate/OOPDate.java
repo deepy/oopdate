@@ -141,15 +141,13 @@ public class OOPDate {
 
             if (additional != null && !additional.isEmpty()) {
                 for (Query q : additional) {
-                    Class type = q.getValue().getClass();
-                    counter = setParameter(ps, counter, q, type.toString());
+                    counter = setParameter(ps, counter, q);
                 }
             }
 
             if (identity != null && !identity.isEmpty()) {
                 for (Query q : identity) {
-                    Class type = q.getValue().getClass();
-                    counter = setParameter(ps, counter, q, type.toString());
+                    counter = setParameter(ps, counter, q);
                 }
             }
 
@@ -170,31 +168,27 @@ public class OOPDate {
         }
     }
 
-    private static int setParameter(PreparedStatement ps, int counter, Object o, String type) throws SQLException, IllegalAccessException {
+    private static int setParameter(PreparedStatement ps, int counter, Object o) throws SQLException, IllegalAccessException {
         Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks.setParameter");
-        switch (type) {
-            case "class java.lang.String":
-                ps.setString(counter++, (String) o);
-                break;
-            case "class java.lang.Integer":
-            case "int":
-                ps.setInt(counter++, (Integer) o);
-                break;
-            case "class java.math.BigDecimal":
-                ps.setBigDecimal(counter++, (BigDecimal) o);
-                break;
-            default:
-                logger.debug("Got unknown type: " + type);
-                throw new IllegalAccessException("Got unknown type: " + type);
+
+        if (o.getClass() == String.class) {
+            ps.setString(counter++, (String) o);
+        } else if (o.getClass() == Integer.class) {
+            ps.setInt(counter++, (Integer) o);
+        } else if (o.getClass() == BigDecimal.class) {
+            ps.setBigDecimal(counter++, (BigDecimal) o);
+        } else {
+            logger.debug("Got unknown type: " + o.getClass().toString());
+            throw new IllegalAccessException("Got unknown type: " + o.getClass().toString());
         }
         return counter;
     }
 
 
-    private static int setParameter(PreparedStatement ps, int counter, Query q, String type) throws IllegalAccessException, SQLException {
+    private static int setParameter(PreparedStatement ps, int counter, Query q) throws IllegalAccessException, SQLException {
         Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks.setParameter");
         if (q.getCastType() == null) {
-            counter = setParameter(ps, counter, q.getValue(), type);
+            counter = setParameter(ps, counter, q.getValue());
         } else {
             switch (q.getCastType()) {
                 case DATERANGE:
