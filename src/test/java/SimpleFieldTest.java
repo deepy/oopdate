@@ -16,6 +16,6 @@ public class SimpleFieldTest {
     @OOPIdentityField
     String id;
 
-    @OOPField(name="woof")
-    Integer woof;
+    @OOPField(name="qty")
+    Integer quantity;
 }

@@ -14,49 +14,41 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class OOPDate {
 
-    public static void magicks(Object obj, SortedMap<String, Object> additional, SortedMap<String, Object> identity, Connection con) throws Exception {
-        List<Query> ql = null;
-        if (additional != null && identity != null) {
-            ql =
-                    Stream.concat(
-                            additional.entrySet().stream()
-                                    .map(e -> Query.data(e.getKey(), e.getValue())),
-                            identity.entrySet().stream()
-                                    .map(e -> Query.identity(e.getKey(), e.getValue()))
-                    ).collect(Collectors.toList());
-        } else if (additional != null) {
-            ql = additional.entrySet().stream()
-                    .map(e -> Query.data(e.getKey(), e.getValue())).collect(Collectors.toList());
-        } else if (identity != null) {
-            ql = identity.entrySet().stream()
-                    .map(e -> Query.identity(e.getKey(), e.getValue())).collect(Collectors.toList());
-        }
-        magicks(obj, ql, con);
+    /**
+     * Takes an Annotated Object and updates it using JDBC.
+     * @param obj Annotated Object to update.
+     * @param con Connection to use.
+     * @throws SQLException
+     * @throws IllegalAccessException
+     */
+    public static void magicks(Object obj, Connection con) throws SQLException, IllegalAccessException {
+        magicks(obj, null, con);
     }
 
-    public static void magicks(Object obj, List<Query> ql, Connection con) throws Exception {
-        List<Query> additional = null;
-        List<Query> identity = null;
-        if (ql != null) {
-            additional = ql.stream().filter(e -> e.getQueryType() == QueryType.DATA ).collect(Collectors.toList());
-            identity = ql.stream().filter(e -> e.getQueryType() == QueryType.IDENTITY ).collect(Collectors.toList());
+    /**
+     * Takes an Annotated Object and updates it using JDBC.
+     * The List of {@link Query} objects provided will take precedence over the annotations.
+     * @param obj Annotated Object to update.
+     * @param ql List of {@link Query} to also include.
+     * @param con Connection to use.
+     * @throws SQLException
+     * @throws IllegalAccessException
+     */
+    public static void magicks(Object obj, List<Query> ql, Connection con) throws SQLException, IllegalAccessException {
+        if (ql == null) {
+            ql = new ArrayList<>();
         }
-        Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks");
+
+        List<Query> queries = new ArrayList<>();
+
         OOPTable table = obj.getClass().getAnnotation(OOPTable.class);
         if (table != null && table.name() != null) {
-            StringWriter where = new StringWriter();
-            StringWriter sw = new StringWriter();
-            sw.write("UPDATE ");
-            sw.write(table.name());
-            sw.write(" SET ");
-
             Field[] fields = obj.getClass().getDeclaredFields();
 
             for (Field f : fields) {
@@ -65,25 +57,58 @@ public class OOPDate {
 
                 f.setAccessible(true);
                 if (o != null && f.get(obj) != null) {
+                    Query q = new Query();
+                    q.setQueryType(QueryType.DATA);
                     if ("".equals(o.name())) {
-                        sw.write(f.getName());
+                        q.setName(f.getName());
                     } else {
-                        sw.write(o.name());
+                        q.setName(o.name());
                     }
-                    sw.write(" = ?, ");
+                    q.setValue(f.get(obj));
+                    queries.add(q);
                 }
 
                 if (i != null && f.get(obj) != null) {
-                    if (where.toString().length() > 0)
-                        where.write(" AND ");
+                    Query q = new Query();
+                    q.setQueryType(QueryType.IDENTITY);
                     if ("".equals(i.name())) {
-                        where.write(f.getName());
+                        q.setName(f.getName());
                     } else {
-                        where.write(i.name());
+                        q.setName(i.name());
                     }
-                    where.write(" = ?");
+                    q.setValue(f.get(obj));
+                    queries.add(q);
                 }
             }
+
+            // Go through the list, sort out the ones that already exist in provided Query List.
+            for (Query q : ql) {
+                List<Query> toDelete = new ArrayList<>();
+                for (Query toAdd : queries) {
+                    if (q.getName().equals(toAdd.getName())) {
+                        toDelete.add(toAdd);
+                    }
+                }
+                queries.removeAll(toDelete);
+            }
+
+            // Merge the completed lists and update.
+            ql.addAll(queries);
+            magicks(table.name(), ql, con);
+        }
+    }
+
+
+    private static void magicks(String table, List<Query> ql, Connection con) throws SQLException, IllegalAccessException {
+        List<Query> additional = ql.stream().filter(e -> e.getQueryType() == QueryType.DATA ).collect(Collectors.toList());
+        List<Query> identity = ql.stream().filter(e -> e.getQueryType() == QueryType.IDENTITY ).collect(Collectors.toList());
+        Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks");
+        if (table != null) {
+            StringWriter where = new StringWriter();
+            StringWriter sw = new StringWriter();
+            sw.write("UPDATE ");
+            sw.write(table);
+            sw.write(" SET ");
 
             if (additional != null && !additional.isEmpty()) {
                 for (Query q : additional) {
@@ -113,28 +138,11 @@ public class OOPDate {
             PreparedStatement ps = con.prepareStatement(sw.toString());
 
             int counter = 1;
-            obj.getClass();
-
-            for (Field f : fields) {
-                Class type = f.getType();
-                OOPField o = f.getAnnotation(OOPField.class);
-                if (o != null) {
-                    counter = setParameter(ps, counter, f.get(obj), type.toString());
-                }
-            }
 
             if (additional != null && !additional.isEmpty()) {
                 for (Query q : additional) {
                     Class type = q.getValue().getClass();
                     counter = setParameter(ps, counter, q, type.toString());
-                }
-            }
-
-            for (Field f : fields) {
-                Class type = f.getType();
-                OOPIdentityField i = f.getAnnotation(OOPIdentityField.class);
-                if (i != null) {
-                    counter = setParameter(ps, counter, f.get(obj), type.toString());
                 }
             }
 

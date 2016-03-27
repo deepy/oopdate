@@ -1,12 +1,11 @@
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import cm.xd.oopdate.OOPDate;
 import cm.xd.oopdate.query.Query;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class OOPFieldTest {
@@ -25,28 +24,73 @@ public class OOPFieldTest {
     @Before
     public void setUp() throws Exception {
         con = getConnection();
-        con.prepareCall("CREATE TABLE mytable (id int, myname varchar, country varchar, woof INT, " +
-                "int INT, str VARCHAR" +
+        con.prepareCall("CREATE TABLE mytable (id varchar, myname varchar, country varchar, qty INT, " +
                 ")").execute();
     }
 
     @Test
     public void fieldTest() throws Exception {
-        HashMap<String, Object> hm = new HashMap<>();
         List<Query> ql = new ArrayList<>();
-        ql.add(Query.data("int", new Integer(1)));
-        ql.add(Query.data("str", "String"));
-        hm.put("int", new Integer(1));
-        hm.put("str", "String");
+        ql.add(Query.data("country", "Norway"));
 
-        SimpleFieldTest test = new SimpleFieldTest();
-        test.setName("Bacon");
-        test.setCountry("Denmark");
+        SimpleFieldTest danish = getObject();
 
-        test.setId("woof");
-        test.setWoof(4);
+        insertFieldTest(danish);
 
-        OOPDate.magicks(test, ql, con);
+        OOPDate.magicks(danish, ql, con);
+
+        Assert.assertNotEquals(danish, selectFieldTest(danish.getId()));
+    }
+
+    @Test
+    public void updateIdentityField() throws Exception {
+        List<Query> ql = new ArrayList<>();
+        SimpleFieldTest danish = getObject();
+        insertFieldTest(danish);
+        ql.add(Query.identity("id", "not-great"));
+        OOPDate.magicks(danish, con);
+        SimpleFieldTest changed = selectFieldTest("not-great");
+        Assert.assertNotEquals(danish, changed);
+    }
+
+    private SimpleFieldTest getObject() {
+        return getObject("Bacon", "Denmark", "bad", 4);
+    }
+
+    private SimpleFieldTest getObject(String name, String country, String id, int quantity) {
+        SimpleFieldTest obj = new SimpleFieldTest();
+        obj.setName(name);
+        obj.setCountry(country);
+        obj.setId(id);
+        obj.setQuantity(quantity);
+        return obj;
+    }
+
+    private void insertFieldTest(SimpleFieldTest danish) throws SQLException {
+        PreparedStatement insert = con.prepareStatement("INSERT INTO mytable VALUES(?, ?, ?, ?)");
+        insert.setString(1, danish.getId());
+        insert.setString(2, danish.getName());
+        insert.setString(3, danish.getCountry());
+        insert.setInt(4, danish.getQuantity());
+
+        insert.execute();
+    }
+
+
+    private SimpleFieldTest selectFieldTest(String id) throws Exception {
+        PreparedStatement ps = con.prepareStatement("SELECT * FROM mytable WHERE id = ?");
+        SimpleFieldTest obj = new SimpleFieldTest();
+        ps.setString(1, id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            obj.setName(rs.getString("myname"));
+            obj.setId(rs.getString("id"));
+            obj.setQuantity(rs.getInt("qty"));
+            obj.setCountry(rs.getString("country"));
+            return obj;
+        }
+
+        return null;
     }
 
 }
