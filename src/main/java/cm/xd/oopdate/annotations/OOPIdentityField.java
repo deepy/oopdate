@@ -6,9 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by alex on 12/7/15.
- */
-
+ * Identity Field gets added to the WHERE part of the query.
+ *
+ * @see OOPField
+ * @see OOPTable
+ **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OOPIdentityField {

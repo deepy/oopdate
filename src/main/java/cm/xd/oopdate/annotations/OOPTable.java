@@ -6,9 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by alex on 12/7/15.
- */
-
+ * Table name, required for OOPDate to work on the class.
+ *
+ * @see OOPField
+ * @see OOPIdentityField
+ **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface OOPTable {
