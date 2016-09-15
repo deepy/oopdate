@@ -100,9 +100,12 @@ public class OOPDate {
     }
 
 
-    private static void magicks(String table, List<Query> ql, Connection con) throws SQLException, IllegalAccessException {
-        List<Query> additional = ql.stream().filter(e -> e.getQueryType() == QueryType.DATA ).collect(Collectors.toList());
-        List<Query> identity = ql.stream().filter(e -> e.getQueryType() == QueryType.IDENTITY ).collect(Collectors.toList());
+    private static void magicks(String table, List<Query> ql, Connection con)
+            throws SQLException, IllegalAccessException {
+        List<Query> additional = ql.stream()
+                .filter(e -> e.getQueryType() == QueryType.DATA ).collect(Collectors.toList());
+        List<Query> identity = ql.stream()
+                .filter(e -> e.getQueryType() == QueryType.IDENTITY ).collect(Collectors.toList());
         Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks");
         if (table != null) {
             StringWriter where = new StringWriter();
@@ -123,8 +126,9 @@ public class OOPDate {
 
             if (identity != null && !identity.isEmpty()) {
                 for (Query q : identity) {
-                    if (where.toString().length() > 0)
+                    if (where.toString().length() > 0) {
                         where.write(" AND ");
+                    }
                     where.write(q.getName());
                     where.write(" = ");
                     handleCast(where, q);
@@ -169,7 +173,8 @@ public class OOPDate {
         }
     }
 
-    private static int setParameter(PreparedStatement ps, int counter, Object o) throws SQLException, IllegalAccessException {
+    private static int setParameter(PreparedStatement ps, int counter, Object o)
+            throws SQLException, IllegalAccessException {
         Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks.setParameter");
 
         if (o.getClass() == String.class) {
@@ -188,7 +193,8 @@ public class OOPDate {
     }
 
 
-    private static int setParameter(PreparedStatement ps, int counter, Query q) throws IllegalAccessException, SQLException {
+    private static int setParameter(PreparedStatement ps, int counter, Query q)
+            throws IllegalAccessException, SQLException {
         Logger logger = LoggerFactory.getLogger("cm.xd.oopdate.magicks.setParameter");
         if (q.getCastType() == null) {
             counter = setParameter(ps, counter, q.getValue());
@@ -198,8 +204,8 @@ public class OOPDate {
                     ps.setString(counter++, (String) q.getValue() );
                     break;
                 default:
-                    logger.debug("Got unknown CastType: "+q.getCastType().toString());
-                    throw new IllegalAccessException("Unknown CastType: "+q.getCastType().toString());
+                    logger.debug("Got unknown CastType: " + q.getCastType().toString());
+                    throw new IllegalAccessException("Unknown CastType: " + q.getCastType().toString());
             }
         }
         return counter;

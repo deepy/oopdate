@@ -3,10 +3,10 @@ import cm.xd.oopdate.annotations.OOPField;
 import cm.xd.oopdate.annotations.OOPIdentityField;
 import cm.xd.oopdate.annotations.OOPTable;
 
-@OOPTable(name="mytable")
+@OOPTable(name = "mytable")
 @Data
 public class SimpleFieldTest {
-    @OOPField(name="myname")
+    @OOPField(name = "myname")
     String name;
 
     @OOPField
@@ -16,6 +16,6 @@ public class SimpleFieldTest {
     @OOPIdentityField
     String id;
 
-    @OOPField(name="qty")
+    @OOPField(name = "qty")
     Integer quantity;
 }
