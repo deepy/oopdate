@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -177,6 +178,8 @@ public class OOPDate {
             ps.setInt(counter++, (Integer) o);
         } else if (o.getClass() == BigDecimal.class) {
             ps.setBigDecimal(counter++, (BigDecimal) o);
+        } else if (o.getClass() == Date.class) {
+            ps.setDate(counter++, (Date) o);
         } else {
             logger.debug("Got unknown type: " + o.getClass().toString());
             throw new IllegalAccessException("Got unknown type: " + o.getClass().toString());
