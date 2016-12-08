@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class Query {
-    private CastType castType;
+    private String castType;
     private QueryType queryType;
     private String name;
     private Object value;
@@ -28,8 +28,19 @@ public class Query {
         return q;
     }
 
-    public Query cast(CastType castType) {
+    public Query cast(String castType) {
         this.castType = castType;
+        return this;
+    }
+
+    /**
+     * @deprecated use string method instead.
+     * @param castType deprecated, CastType to use
+     * @return Query
+     */
+    @Deprecated
+    public Query cast(CastType castType) {
+        this.castType = castType.toString().toLowerCase();
         return this;
     }
 }
