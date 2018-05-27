@@ -3,7 +3,7 @@ import cm.xd.oopdate.annotations.OOPIdentityField
 import cm.xd.oopdate.annotations.OOPTable
 
 @OOPTable(name = "mytable")
-class SimpleFieldTest {
+class SimpleField {
     @OOPField(name = "myname")
     var name: String? = null
 
