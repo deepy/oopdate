@@ -108,25 +108,21 @@ class OOPDate {
                 sw.write(table)
                 sw.write(" SET ")
 
-                if (!additional.isEmpty()) {
-                    additional.forEach {q ->
-                        sw.write(q.name)
-                        sw.write(" = ")
-                        handleCast(sw, q)
-                        sw.write(", ")
+                additional.forEach {q ->
+                    sw.write(q.name)
+                    sw.write(" = ")
+                    handleCast(sw, q)
+                    sw.write(", ")
 
-                    }
                 }
 
-                if (!identity.isEmpty()) {
-                    identity.forEach {q ->
-                        if (where.toString().isNotEmpty()) {
-                            where.write(" AND ")
-                        }
-                        where.write(q.name)
-                        where.write(" = ")
-                        handleCast(where, q)
+                identity.forEach {q ->
+                    if (where.toString().isNotEmpty()) {
+                        where.write(" AND ")
                     }
+                    where.write(q.name)
+                    where.write(" = ")
+                    handleCast(where, q)
                 }
 
                 // Cut off the last ,
@@ -138,16 +134,12 @@ class OOPDate {
 
                 var counter = 1
 
-                if (!additional.isEmpty()) {
-                    additional.forEach {q ->
-                        counter = setParameter(mapper, ps, counter, q)
-                    }
+                additional.forEach {q ->
+                    counter = setParameter(mapper, ps, counter, q)
                 }
 
-                if (!identity.isEmpty()) {
-                    identity.forEach {q ->
-                        counter = setParameter(mapper, ps, counter, q)
-                    }
+                identity.forEach {q ->
+                    counter = setParameter(mapper, ps, counter, q)
                 }
 
                 logger.debug("Executing statement: " + ps.toString())
