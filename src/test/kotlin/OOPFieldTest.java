@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OOPFieldTest {
-    Connection con;
+    private Connection con;
 
     public Connection getConnection() {
         try {
-            Connection con = DriverManager.getConnection("jdbc:h2:mem:");
-            return con;
+            return DriverManager.getConnection("jdbc:h2:mem:");
         } catch (Exception e) {
             return null;
         }
@@ -24,8 +23,7 @@ public class OOPFieldTest {
     @Before
     public void setUp() throws Exception {
         con = getConnection();
-        con.prepareCall("CREATE TABLE mytable (id varchar, myname varchar, country varchar, qty INT, " +
-                ")").execute();
+        con.prepareCall("CREATE TABLE mytable (id varchar, myname varchar, country varchar, qty INT, )").execute();
     }
 
     @Test
